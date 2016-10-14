@@ -3,4 +3,4 @@
 
 
 Demo截图
-![image](https://github.com/ZTFsmart/ZTFRedRainDemo/RedRainDemo/Image/红包雨截图.png)
+![image](https://github.com/ZTFsmart/ZTFRedRainDemo/RedRainDemo/Image/redRain.png)
