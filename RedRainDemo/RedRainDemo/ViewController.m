@@ -49,6 +49,20 @@
 
     [self.startBtn addTarget:self action:@selector(start) forControlEvents:UIControlEventTouchUpInside];
 }
+
+- (NSMutableArray *)imageArray{
+    if (!_imageArray) {
+        _imageArray = [NSMutableArray array];
+    }
+    return _imageArray;
+}
+
+- (NSMutableArray *)usedImageArray {
+    if (!_usedImageArray) {
+        _usedImageArray = [NSMutableArray array];
+    }
+    return _usedImageArray;
+}
 #pragma mark - Private
 //开始红包雨
 - (void)start {
@@ -85,11 +99,13 @@
             self.startBtn.hidden = NO;
             self.selectedLabel.hidden = NO;
             self.selectedLabel.text = [NSString stringWithFormat:@"点中%ld个",self.selectedNumber];
+            self.imageArray = nil;
+            self.usedImageArray = nil;
         });
         return;
     }
 
-    NSLog(@"第%f个,间隔为%f,降落时间为%f",self.number,interval,second);
+    //NSLog(@"第%f个,间隔为%f,降落时间为%f",self.number,interval,second);
     if (_imageArray.count) {
         //如果存有imageview就复用
         UIImageView *imageView = [_imageArray objectAtIndex:0];
@@ -108,7 +124,7 @@
 //开始动画
 - (void)animationWithImageView:(UIImageView *)imageView andSecond:(double)second{
     [_usedImageArray addObject:imageView];
-    NSLog(@"tag=%ld",imageView.tag);
+    //NSLog(@"tag=%ld",imageView.tag);
     int x = arc4random() % (int)([UIScreen mainScreen].bounds.size.width - 79);
     imageView.frame = CGRectMake(x, -95, 79, 95);
     [self.view addSubview:imageView];
@@ -146,6 +162,7 @@
         //便利显示的图片的layer,看触摸点在哪个里边
         if ([imgView.layer.presentationLayer hitTest:point]) {
             self.selectedNumber++;
+            NSLog(@"点中了");
             [imgView.layer removeAllAnimations];
             if ([_imageArray containsObject:imgView]) {
                 return;
