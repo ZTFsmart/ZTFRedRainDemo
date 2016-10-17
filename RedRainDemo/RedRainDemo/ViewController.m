@@ -7,7 +7,6 @@
 //
 
 #import "ViewController.h"
-#import "RedView.h"
 
 #define KSCReenWidth  [UIScreen mainScreen].bounds.size.width
 #define KSCReenHeight  [UIScreen mainScreen].bounds.size.height
@@ -25,6 +24,12 @@
 @property (assign, nonatomic) double num;    //多少个红包
 @property (assign, nonatomic) double screenNum;//每屏幕多少个红包
 @property (assign, nonatomic) double number;
+@property (assign, nonatomic) double imageNumber;
+
+
+@property (nonatomic,strong) NSMutableArray * imageArray;//未用的图层数组
+@property (nonatomic,strong) NSMutableArray * usedImageArray;//已经使用的图层数组
+@property (nonatomic, strong) UITapGestureRecognizer *tapGesture;
 
 @end
 
@@ -32,18 +37,24 @@
 #pragma mark - Filecycle
 - (void)viewDidLoad {
     [super viewDidLoad];
-
     [self configCustomView];
-    
 }
 #pragma mark - CustomAccessors
 - (void)configCustomView {
-    [self.startBtn addTarget:self action:@selector(start) forControlEvents:UIControlEventTouchUpInside];
+    _imageArray = [NSMutableArray array];
+    _usedImageArray = [NSMutableArray array];
+    //手势
+    self.tapGesture = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(click:)];
+    [self.view addGestureRecognizer:self.tapGesture];
 
+    
+    [self.startBtn addTarget:self action:@selector(start) forControlEvents:UIControlEventTouchUpInside];
 }
 #pragma mark - Private
 
+//开始红包雨
 - (void)start {
+    self.imageNumber = 0;
     self.number = 0;
     [self.view endEditing:YES];
     if ([self.secondText.text doubleValue] && [self.numberText.text doubleValue] && [self.screenNumberText.text doubleValue]) {
@@ -57,73 +68,83 @@
     }
     self.startBtn.hidden = YES;
     double interval = self.second / self.num;
-    double second = interval * self.screenNum;
-    NSLog(@"间隔为%f,降落时间为%f",interval,second);
-    self.timer=[NSTimer scheduledTimerWithTimeInterval:interval target:self selector:@selector(configRedView) userInfo:nil repeats:YES];
+    self.timer=[NSTimer scheduledTimerWithTimeInterval:interval target:self selector:@selector(creatRedRain) userInfo:nil repeats:YES];
 }
 
-- (void)configRedView {
-    
-    double interval = self.second / self.num;
-    double second = interval * self.screenNum;
-    NSInteger x = arc4random() % (int)(KSCReenWidth - 79);
-    RedView *redView = [[RedView alloc] initWithFrame:CGRectMake(x, -95, 79, 95)];
-    [self.view addSubview:redView];
-    [redView startAnimationDuration:second];
-    
-}
-
-
-- (void)redRain {
+- (void)creatRedRain {
     self.number++;
-    NSLog(@"第%ld个",(long)self.number);
-    NSDate *date=[NSDate date];
-    NSDateFormatter *format1=[[NSDateFormatter alloc] init];
-    [format1 setDateFormat:@"yyyy-MM-dd hh:mm:ss"];
-    NSString *dateStr;
-    dateStr=[format1 stringFromDate:date];
-    NSLog(@"%@",dateStr);
     if (self.number > self.num) {
         [self.timer invalidate];
         self.timer = nil;
         self.startBtn.hidden = NO;
+        return;
     }
-    //制造红包雨
     double interval = self.second / self.num;
     double second = interval * self.screenNum;
-    [self redRainSecond:second];
-}
-
-
-- (void)redRainSecond:(double)second{
-
-    UIButton *redRainView = [[UIButton alloc]init];
-    [redRainView setImage:[UIImage imageNamed:@"hb.png"] forState:UIControlStateNormal];
-    [redRainView setImage:[UIImage imageNamed:@"redPaper.jpg"] forState:UIControlStateSelected];
-    [redRainView addTarget:self action:@selector(click:) forControlEvents:UIControlEventTouchUpInside];
-    int x = arc4random() % (int)([UIScreen mainScreen].bounds.size.width - 79);
-    redRainView.frame = CGRectMake(x, -95, 79, 95);
-    [self.view addSubview:redRainView];
-    
-    [UIView animateWithDuration:second animations:^{
+    NSLog(@"第%f个,间隔为%f,降落时间为%f",self.number,interval,second);
+    if (_imageArray.count) {
+        UIImageView *imageView = [_imageArray objectAtIndex:0];
+        [_imageArray removeObjectAtIndex:0];
+        [self animationWithImageView:imageView andSecond:second];
         
-        redRainView.transform = CGAffineTransformMakeTranslation(0, [UIScreen mainScreen].bounds.size.height + 95);
-        
-    }completion:^(BOOL finished) {
-        if (redRainView) {
-            [redRainView removeFromSuperview];
-        }
-    }];
-    
-}
-
-- (void)click:(UIButton *)btn {
-    if (!btn.selected) {
-        btn.selected = YES;
-        [btn removeFromSuperview];
+        //[_imageArray removeObjectAtIndex:0];
+    }else {
+        self.imageNumber++;
+        UIImageView * imageView = [[UIImageView alloc]initWithImage:[UIImage imageNamed:@"hb.png"]];
+        imageView.tag = self.imageNumber;
+        [self animationWithImageView:imageView andSecond:second];
     }
+
+}
+
+
+
+- (void)animationWithImageView:(UIImageView *)imageView andSecond:(double)second{
+    [_usedImageArray addObject:imageView];
+    NSLog(@"tag=%ld",imageView.tag);
+    int x = arc4random() % (int)([UIScreen mainScreen].bounds.size.width - 79);
+    imageView.frame = CGRectMake(x, -95, 79, 95);
+    [self.view addSubview:imageView];
     
     
+    [UIView beginAnimations:[NSString stringWithFormat:@"%li",(long)imageView.tag] context:nil];
+    [UIView setAnimationCurve:UIViewAnimationCurveEaseIn];
+    [UIView setAnimationDuration:second];
+    [UIView setAnimationDelegate:self];
+    imageView.frame = CGRectMake(imageView.frame.origin.x, KSCReenHeight, imageView.frame.size.width, imageView.frame.size.height);
+    [UIView commitAnimations];
+    
+    
+
+}
+
+- (void)animationDidStop:(NSString *)animationID finished:(NSNumber *)finished context:(void *)context
+{
+    UIImageView *imageView = (UIImageView *)[self.view viewWithTag:[animationID intValue]];
+    if ([_imageArray containsObject:imageView]) {
+        return;
+    }
+    if (!imageView) {
+        return;
+    }
+    [imageView removeFromSuperview];
+    [_imageArray addObject:imageView];
+    [_usedImageArray removeObject:imageView];
+}
+
+-(void)click:(UITapGestureRecognizer *)tapGesture {
+    CGPoint touchPoint = [tapGesture locationInView:self.view];
+    NSLog(@"点了");
+    for (UIImageView * imgView in _usedImageArray) {
+        
+        if ([imgView.layer.presentationLayer hitTest:touchPoint]) {
+            [imgView.layer removeAllAnimations];
+            [self animationDidStop:[NSString stringWithFormat:@"%li",(long)imgView.tag] finished:nil context:nil];
+            NSLog(@"点中");
+            
+            return;
+        }
+    }
 }
 
 @end
