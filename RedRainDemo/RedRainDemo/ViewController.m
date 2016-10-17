@@ -19,17 +19,18 @@
 @property (weak, nonatomic) IBOutlet UITextField *secondText;
 @property (weak, nonatomic) IBOutlet UITextField *numberText;
 @property (weak, nonatomic) IBOutlet UIButton *startBtn;
+@property (weak, nonatomic) IBOutlet UILabel *selectedLabel;
 
 @property (assign, nonatomic) double second; //多少秒
 @property (assign, nonatomic) double num;    //多少个红包
 @property (assign, nonatomic) double screenNum;//每屏幕多少个红包
 @property (assign, nonatomic) double number;
-@property (assign, nonatomic) double imageNumber;
+@property (assign, nonatomic) NSInteger imageNumber;
+@property (assign, nonatomic) NSInteger selectedNumber;//选中的红包
 
 
 @property (nonatomic,strong) NSMutableArray * imageArray;//未用的图层数组
 @property (nonatomic,strong) NSMutableArray * usedImageArray;//已经使用的图层数组
-@property (nonatomic, strong) UITapGestureRecognizer *tapGesture;
 
 @end
 
@@ -41,21 +42,19 @@
 }
 #pragma mark - CustomAccessors
 - (void)configCustomView {
+    //初始化数组
     _imageArray = [NSMutableArray array];
     _usedImageArray = [NSMutableArray array];
-    //手势
-    self.tapGesture = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(click:)];
-    [self.view addGestureRecognizer:self.tapGesture];
 
-    
+
     [self.startBtn addTarget:self action:@selector(start) forControlEvents:UIControlEventTouchUpInside];
 }
 #pragma mark - Private
-
 //开始红包雨
 - (void)start {
     self.imageNumber = 0;
     self.number = 0;
+    self.selectedNumber = 0;
     [self.view endEditing:YES];
     if ([self.secondText.text doubleValue] && [self.numberText.text doubleValue] && [self.screenNumberText.text doubleValue]) {
         [self.startBtn setTitle:@"开始" forState:UIControlStateNormal];
@@ -67,28 +66,37 @@
         return;
     }
     self.startBtn.hidden = YES;
+    self.selectedLabel.hidden = YES;
     double interval = self.second / self.num;
     self.timer=[NSTimer scheduledTimerWithTimeInterval:interval target:self selector:@selector(creatRedRain) userInfo:nil repeats:YES];
 }
-
+//创建红包
 - (void)creatRedRain {
-    self.number++;
+    
+    self.number++;//每创建一个红包增加一次,到固定次数后停止
+    double interval = self.second / self.num;
+    double second = interval * self.screenNum;
     if (self.number > self.num) {
         [self.timer invalidate];
         self.timer = nil;
-        self.startBtn.hidden = NO;
+        //最后一个后,需要让最后一个到最下边后再完全停止
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(second * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+            self.startBtn.hidden = NO;
+            self.selectedLabel.hidden = NO;
+            self.selectedLabel.text = [NSString stringWithFormat:@"点中%ld个",self.selectedNumber];
+        });
         return;
     }
-    double interval = self.second / self.num;
-    double second = interval * self.screenNum;
+
     NSLog(@"第%f个,间隔为%f,降落时间为%f",self.number,interval,second);
     if (_imageArray.count) {
+        //如果存有imageview就复用
         UIImageView *imageView = [_imageArray objectAtIndex:0];
         [_imageArray removeObjectAtIndex:0];
         [self animationWithImageView:imageView andSecond:second];
         
-        //[_imageArray removeObjectAtIndex:0];
     }else {
+        //没有的话就创建
         self.imageNumber++;
         UIImageView * imageView = [[UIImageView alloc]initWithImage:[UIImage imageNamed:@"hb.png"]];
         imageView.tag = self.imageNumber;
@@ -96,9 +104,7 @@
     }
 
 }
-
-
-
+//开始动画
 - (void)animationWithImageView:(UIImageView *)imageView andSecond:(double)second{
     [_usedImageArray addObject:imageView];
     NSLog(@"tag=%ld",imageView.tag);
@@ -106,18 +112,16 @@
     imageView.frame = CGRectMake(x, -95, 79, 95);
     [self.view addSubview:imageView];
     
-    
+    //下落动画
     [UIView beginAnimations:[NSString stringWithFormat:@"%li",(long)imageView.tag] context:nil];
     [UIView setAnimationCurve:UIViewAnimationCurveEaseIn];
     [UIView setAnimationDuration:second];
     [UIView setAnimationDelegate:self];
     imageView.frame = CGRectMake(imageView.frame.origin.x, KSCReenHeight, imageView.frame.size.width, imageView.frame.size.height);
     [UIView commitAnimations];
-    
-    
 
 }
-
+//动画停止
 - (void)animationDidStop:(NSString *)animationID finished:(NSNumber *)finished context:(void *)context
 {
     UIImageView *imageView = (UIImageView *)[self.view viewWithTag:[animationID intValue]];
@@ -132,19 +136,30 @@
     [_usedImageArray removeObject:imageView];
 }
 
--(void)click:(UITapGestureRecognizer *)tapGesture {
-    CGPoint touchPoint = [tapGesture locationInView:self.view];
-    NSLog(@"点了");
+//触摸view
+- (void)touchesBegan:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event {
+
+    UITouch *touch = touches.anyObject;
+    CGPoint point = [touch locationInView:self.view];
     for (UIImageView * imgView in _usedImageArray) {
-        
-        if ([imgView.layer.presentationLayer hitTest:touchPoint]) {
+        //便利显示的图片的layer,看触摸点在哪个里边
+        if ([imgView.layer.presentationLayer hitTest:point]) {
+            self.selectedNumber++;
             [imgView.layer removeAllAnimations];
-            [self animationDidStop:[NSString stringWithFormat:@"%li",(long)imgView.tag] finished:nil context:nil];
-            NSLog(@"点中");
+            if ([_imageArray containsObject:imgView]) {
+                return;
+            }
+            if (!imgView) {
+                return;
+            }
+            [imgView removeFromSuperview];
+            [_imageArray addObject:imgView];
+            [_usedImageArray removeObject:imgView];
             
             return;
         }
     }
 }
+
 
 @end
