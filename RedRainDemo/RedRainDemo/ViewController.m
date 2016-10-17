@@ -7,6 +7,10 @@
 //
 
 #import "ViewController.h"
+#import "RedView.h"
+
+#define KSCReenWidth  [UIScreen mainScreen].bounds.size.width
+#define KSCReenHeight  [UIScreen mainScreen].bounds.size.height
 
 @interface ViewController ()
 
@@ -21,6 +25,7 @@
 @property (assign, nonatomic) double num;    //多少个红包
 @property (assign, nonatomic) double screenNum;//每屏幕多少个红包
 @property (assign, nonatomic) double number;
+
 @end
 
 @implementation ViewController
@@ -34,9 +39,10 @@
 #pragma mark - CustomAccessors
 - (void)configCustomView {
     [self.startBtn addTarget:self action:@selector(start) forControlEvents:UIControlEventTouchUpInside];
-    
+
 }
 #pragma mark - Private
+
 - (void)start {
     self.number = 0;
     [self.view endEditing:YES];
@@ -53,8 +59,20 @@
     double interval = self.second / self.num;
     double second = interval * self.screenNum;
     NSLog(@"间隔为%f,降落时间为%f",interval,second);
-    self.timer=[NSTimer scheduledTimerWithTimeInterval:interval target:self selector:@selector(redRain) userInfo:nil repeats:YES];
+    self.timer=[NSTimer scheduledTimerWithTimeInterval:interval target:self selector:@selector(configRedView) userInfo:nil repeats:YES];
 }
+
+- (void)configRedView {
+    
+    double interval = self.second / self.num;
+    double second = interval * self.screenNum;
+    NSInteger x = arc4random() % (int)(KSCReenWidth - 79);
+    RedView *redView = [[RedView alloc] initWithFrame:CGRectMake(x, -95, 79, 95)];
+    [self.view addSubview:redView];
+    [redView startAnimationDuration:second];
+    
+}
+
 
 - (void)redRain {
     self.number++;
@@ -79,19 +97,32 @@
 
 - (void)redRainSecond:(double)second{
 
-    UIImageView *redRainImageView = [[UIImageView alloc]initWithImage:[UIImage imageNamed:@"hb"]];
+    UIButton *redRainView = [[UIButton alloc]init];
+    [redRainView setImage:[UIImage imageNamed:@"hb.png"] forState:UIControlStateNormal];
+    [redRainView setImage:[UIImage imageNamed:@"redPaper.jpg"] forState:UIControlStateSelected];
+    [redRainView addTarget:self action:@selector(click:) forControlEvents:UIControlEventTouchUpInside];
     int x = arc4random() % (int)([UIScreen mainScreen].bounds.size.width - 79);
-    redRainImageView.frame = CGRectMake(x, -95, 79, 95);
-    [self.view addSubview:redRainImageView];
-    
+    redRainView.frame = CGRectMake(x, -95, 79, 95);
+    [self.view addSubview:redRainView];
     
     [UIView animateWithDuration:second animations:^{
         
-        redRainImageView.transform = CGAffineTransformMakeTranslation(0, [UIScreen mainScreen].bounds.size.height + 95);
+        redRainView.transform = CGAffineTransformMakeTranslation(0, [UIScreen mainScreen].bounds.size.height + 95);
         
     }completion:^(BOOL finished) {
-        [redRainImageView removeFromSuperview];
+        if (redRainView) {
+            [redRainView removeFromSuperview];
+        }
     }];
+    
+}
+
+- (void)click:(UIButton *)btn {
+    if (!btn.selected) {
+        btn.selected = YES;
+        [btn removeFromSuperview];
+    }
+    
     
 }
 

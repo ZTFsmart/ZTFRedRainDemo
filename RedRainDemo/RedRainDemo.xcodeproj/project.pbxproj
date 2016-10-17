@@ -19,6 +19,7 @@
 		6F08E8141DAF8AFA00D61FD5 /* hb.png in Resources */ = {isa = PBXBuildFile; fileRef = 6F08E8101DAF8AFA00D61FD5 /* hb.png */; };
 		6F08E8151DAF8AFA00D61FD5 /* redPaper.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 6F08E8111DAF8AFA00D61FD5 /* redPaper.jpg */; };
 		6F08E8161DAF8AFA00D61FD5 /* snow.png in Resources */ = {isa = PBXBuildFile; fileRef = 6F08E8121DAF8AFA00D61FD5 /* snow.png */; };
+		6F22E3801DB461DD00CD3EBD /* RedView.m in Sources */ = {isa = PBXBuildFile; fileRef = 6F22E37F1DB461DD00CD3EBD /* RedView.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -59,6 +60,8 @@
 		6F08E8101DAF8AFA00D61FD5 /* hb.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = hb.png; sourceTree = "<group>"; };
 		6F08E8111DAF8AFA00D61FD5 /* redPaper.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = redPaper.jpg; sourceTree = "<group>"; };
 		6F08E8121DAF8AFA00D61FD5 /* snow.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = snow.png; sourceTree = "<group>"; };
+		6F22E37E1DB461DD00CD3EBD /* RedView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RedView.h; sourceTree = "<group>"; };
+		6F22E37F1DB461DD00CD3EBD /* RedView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RedView.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -113,6 +116,8 @@
 				6F08E7DF1DAF8ADB00D61FD5 /* AppDelegate.m */,
 				6F08E7E11DAF8ADB00D61FD5 /* ViewController.h */,
 				6F08E7E21DAF8ADB00D61FD5 /* ViewController.m */,
+				6F22E37E1DB461DD00CD3EBD /* RedView.h */,
+				6F22E37F1DB461DD00CD3EBD /* RedView.m */,
 				6F08E7E41DAF8ADB00D61FD5 /* Main.storyboard */,
 				6F08E80E1DAF8AFA00D61FD5 /* imgs */,
 				6F08E7E71DAF8ADB00D61FD5 /* Assets.xcassets */,
@@ -300,6 +305,7 @@
 			files = (
 				6F08E7E31DAF8ADB00D61FD5 /* ViewController.m in Sources */,
 				6F08E7E01DAF8ADB00D61FD5 /* AppDelegate.m in Sources */,
+				6F22E3801DB461DD00CD3EBD /* RedView.m in Sources */,
 				6F08E7DD1DAF8ADB00D61FD5 /* main.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
