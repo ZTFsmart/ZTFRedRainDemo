@@ -58,9 +58,10 @@
     [self.view endEditing:YES];
     if ([self.secondText.text doubleValue] && [self.numberText.text doubleValue] && [self.screenNumberText.text doubleValue]) {
         [self.startBtn setTitle:@"开始" forState:UIControlStateNormal];
-        self.screenNum = [self.screenNumberText.text doubleValue];
         self.second = [self.secondText.text doubleValue];
         self.num = [self.numberText.text doubleValue];
+        self.screenNum = [self.screenNumberText.text doubleValue];
+        self.screenNum = [self.screenNumberText.text doubleValue] < self.num ? [self.screenNumberText.text doubleValue] : self.num;
     }else {
         [self.startBtn setTitle:@"不能为0或者字符" forState:UIControlStateNormal];
         return;
