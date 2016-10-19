@@ -20,6 +20,7 @@
 @property (weak, nonatomic) IBOutlet UITextField *numberText;
 @property (weak, nonatomic) IBOutlet UIButton *startBtn;
 @property (weak, nonatomic) IBOutlet UILabel *selectedLabel;
+@property (weak, nonatomic) IBOutlet UILabel *selectedLabelBottom;
 
 @property (assign, nonatomic) double second; //多少秒
 @property (assign, nonatomic) double num;    //多少个红包
@@ -106,10 +107,10 @@
     }
 
     //NSLog(@"第%f个,间隔为%f,降落时间为%f",self.number,interval,second);
-    if (_imageArray.count) {
+    if (self.imageArray.count) {
         //如果存有imageview就复用
-        UIImageView *imageView = [_imageArray objectAtIndex:0];
-        [_imageArray removeObjectAtIndex:0];
+        UIImageView *imageView = [self.imageArray objectAtIndex:0];
+        [self.imageArray removeObjectAtIndex:0];
         [self animationWithImageView:imageView andSecond:second];
         
     }else {
@@ -123,7 +124,7 @@
 }
 //开始动画
 - (void)animationWithImageView:(UIImageView *)imageView andSecond:(double)second{
-    [_usedImageArray addObject:imageView];
+    [self.usedImageArray addObject:imageView];
     //NSLog(@"tag=%ld",imageView.tag);
     int x = arc4random() % (int)([UIScreen mainScreen].bounds.size.width - 79);
     imageView.frame = CGRectMake(x, -95, 79, 95);
@@ -142,41 +143,110 @@
 - (void)animationDidStop:(NSString *)animationID finished:(NSNumber *)finished context:(void *)context
 {
     UIImageView *imageView = (UIImageView *)[self.view viewWithTag:[animationID intValue]];
-    if ([_imageArray containsObject:imageView]) {
+    if ([self.imageArray containsObject:imageView]) {
         return;
     }
     if (!imageView) {
         return;
     }
     [imageView removeFromSuperview];
-    [_imageArray addObject:imageView];
-    [_usedImageArray removeObject:imageView];
+    [self.imageArray addObject:imageView];
+    [self.usedImageArray removeObject:imageView];
 }
 
 //触摸view
 - (void)touchesBegan:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event {
-
+    NSLog(@"点了");
     UITouch *touch = touches.anyObject;
     CGPoint point = [touch locationInView:self.view];
     for (UIImageView * imgView in _usedImageArray) {
         //便利显示的图片的layer,看触摸点在哪个里边
         if ([imgView.layer.presentationLayer hitTest:point]) {
             self.selectedNumber++;
-            NSLog(@"点中了");
+            self.selectedLabelBottom.text = [NSString stringWithFormat:@"%ld",(long)self.selectedNumber];
+            NSLog(@"点中了,第%ld个",(long)self.selectedNumber);
             [imgView.layer removeAllAnimations];
-            if ([_imageArray containsObject:imgView]) {
+            imgView.center = point;
+            if ([self.imageArray containsObject:imgView]) {
                 return;
             }
             if (!imgView) {
                 return;
             }
-            [imgView removeFromSuperview];
-            [_imageArray addObject:imgView];
-            [_usedImageArray removeObject:imgView];
+
             
+            [self showAddCartAnmationSview:self.view imageView:imgView starPoin:imgView.center endPoint:CGPointMake(KSCReenWidth - 20 - 25, KSCReenHeight - 20 - 15) dismissTime:1.0];
+            
+//            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+//
+//            });
+            
+            [imgView removeFromSuperview];
+            [self.imageArray addObject:imgView];
+            [self.usedImageArray removeObject:imgView];
             return;
         }
     }
+}
+
+
+- (void)showAddCartAnmationSview:(UIView *)sview
+                       imageView:(UIImageView *)imageView
+                        starPoin:(CGPoint)startPoint
+                        endPoint:(CGPoint)endpoint
+                     dismissTime:(float)dismissTime
+{
+    __block CALayer *layer;
+    layer                               = [[CALayer alloc]init];
+    layer.contents                      = imageView.layer.contents;
+    layer.frame                         = imageView.frame;
+    layer.opacity                       = 1;
+    [sview.layer addSublayer:layer];
+    UIBezierPath *path                  = [UIBezierPath bezierPath];
+    [path moveToPoint:startPoint];
+    //贝塞尔曲线控制点
+    float sx                            = startPoint.x;
+    float sy                            = startPoint.y;
+    float ex                            = endpoint.x;
+    float ey                            = endpoint.y;
+    float x                             = sx + (ex - sx) / 3;
+    float y                             = sy + (ey - sy) * 0.5 - 400;
+    CGPoint centerPoint                 = CGPointMake(x, y);
+    [path addQuadCurveToPoint:endpoint controlPoint:centerPoint];
+    //设置位置动画
+    CAKeyframeAnimation *animation=[CAKeyframeAnimation animationWithKeyPath:@"position"];
+    animation.path                      = path.CGPath;
+    animation.removedOnCompletion       = NO;
+    //设置大小动画
+    CGSize finalSize                    = CGSizeMake(imageView.image.size.height*0.1, imageView.image.size.width*0.1);
+    CABasicAnimation *resizeAnimation   = [CABasicAnimation animationWithKeyPath:@"bounds.size"];
+    resizeAnimation.removedOnCompletion = NO;
+    [resizeAnimation setToValue:[NSValue valueWithCGSize:finalSize]];
+    //旋转
+    CABasicAnimation* rotationAnimation;
+    rotationAnimation                   = [CABasicAnimation animationWithKeyPath:@"transform.rotation.z"];
+    rotationAnimation.toValue           = [NSNumber numberWithFloat: M_PI * 2.0 ];
+    rotationAnimation.cumulative        = YES;
+    rotationAnimation.duration          = 0.3;
+    rotationAnimation.repeatCount       = 1000;
+    //动画组
+    CAAnimationGroup * animationGroup   = [[CAAnimationGroup alloc] init];
+    animationGroup.animations           = @[animation,resizeAnimation,rotationAnimation];
+    animationGroup.delegate             = self;
+    animationGroup.duration             = 0.6;
+    animationGroup.removedOnCompletion  = NO;
+    animationGroup.fillMode             = kCAFillModeForwards;
+    animationGroup.autoreverses         = NO;
+    animationGroup.timingFunction       = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseIn];
+    [layer addAnimation:animationGroup forKey:@"buy"];
+    
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(dismissTime * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        [layer removeFromSuperlayer];
+        layer = nil;
+//        [imageView removeFromSuperview];
+//        [_imageArray addObject:imageView];
+//        [_usedImageArray removeObject:imageView];
+    });
 }
 
 

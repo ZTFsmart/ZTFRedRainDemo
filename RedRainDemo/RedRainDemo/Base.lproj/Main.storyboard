@@ -3,6 +3,7 @@
     <dependencies>
         <deployment identifier="iOS"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="11161"/>
+        <capability name="Constraints to layout margins" minToolsVersion="6.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
@@ -92,6 +93,16 @@
                                 <nil key="textColor"/>
                                 <nil key="highlightedColor"/>
                             </label>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="0" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="uNS-8A-gMa">
+                                <color key="backgroundColor" red="0.92156862750000001" green="0.92156862750000001" blue="0.92156862750000001" alpha="1" colorSpace="calibratedRGB"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="30" id="NDS-PN-A1U"/>
+                                    <constraint firstAttribute="width" constant="50" id="aOs-FW-rSa"/>
+                                </constraints>
+                                <fontDescription key="fontDescription" type="system" pointSize="15"/>
+                                <nil key="textColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
                         </subviews>
                         <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
@@ -102,12 +113,14 @@
                             <constraint firstItem="Ca7-rj-mwo" firstAttribute="top" secondItem="y3c-jy-aDJ" secondAttribute="bottom" constant="20" id="R8V-g1-H1j"/>
                             <constraint firstItem="wjA-yy-xmm" firstAttribute="leading" secondItem="zGt-dN-WDk" secondAttribute="trailing" constant="10" id="Uma-Jg-v71"/>
                             <constraint firstItem="OYK-Lg-Z7n" firstAttribute="top" secondItem="y3c-jy-aDJ" secondAttribute="bottom" constant="20" id="Wa3-lA-7Fn"/>
+                            <constraint firstItem="wfy-db-euE" firstAttribute="top" secondItem="uNS-8A-gMa" secondAttribute="bottom" constant="20" id="ZoM-ti-ozw"/>
                             <constraint firstItem="1XQ-0C-Db8" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leading" constant="20" id="aKe-ap-fVa"/>
                             <constraint firstItem="BpR-Nn-3yW" firstAttribute="leading" secondItem="wjA-yy-xmm" secondAttribute="trailing" constant="10" id="aWF-7B-BXm"/>
                             <constraint firstItem="oO3-4h-XmL" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="caN-lh-e6o"/>
                             <constraint firstItem="OYK-Lg-Z7n" firstAttribute="leading" secondItem="BpR-Nn-3yW" secondAttribute="trailing" constant="10" id="dlu-kP-sOx"/>
                             <constraint firstItem="dNL-ee-KXW" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="hdq-AX-5TI"/>
                             <constraint firstItem="dNL-ee-KXW" firstAttribute="centerY" secondItem="8bC-Xf-vdC" secondAttribute="centerY" id="mY2-Un-Obr"/>
+                            <constraint firstAttribute="trailingMargin" secondItem="uNS-8A-gMa" secondAttribute="trailing" constant="20" id="mgI-hL-Aoj"/>
                             <constraint firstItem="wjA-yy-xmm" firstAttribute="top" secondItem="y3c-jy-aDJ" secondAttribute="bottom" constant="20" id="tOM-g1-nN4"/>
                             <constraint firstItem="zGt-dN-WDk" firstAttribute="leading" secondItem="Ca7-rj-mwo" secondAttribute="trailing" constant="10" id="uzn-QN-bGB"/>
                             <constraint firstItem="1XQ-0C-Db8" firstAttribute="top" secondItem="y3c-jy-aDJ" secondAttribute="bottom" constant="20" id="vYh-Vp-uQA"/>
@@ -118,12 +131,13 @@
                         <outlet property="screenNumberText" destination="zGt-dN-WDk" id="k3O-Kq-W4V"/>
                         <outlet property="secondText" destination="1XQ-0C-Db8" id="x6q-qG-bQ2"/>
                         <outlet property="selectedLabel" destination="oO3-4h-XmL" id="BBr-pc-D3l"/>
+                        <outlet property="selectedLabelBottom" destination="uNS-8A-gMa" id="6Zd-oc-weS"/>
                         <outlet property="startBtn" destination="dNL-ee-KXW" id="rLO-Cc-nwt"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="24.800000000000001" y="35.532233883058474"/>
+            <point key="canvasLocation" x="-663" y="24"/>
         </scene>
     </scenes>
 </document>
