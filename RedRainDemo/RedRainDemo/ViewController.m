@@ -11,7 +11,7 @@
 #define KSCReenWidth  [UIScreen mainScreen].bounds.size.width
 #define KSCReenHeight  [UIScreen mainScreen].bounds.size.height
 
-@interface ViewController ()
+@interface ViewController ()<CAAnimationDelegate>
 
 @property (nonatomic, strong) NSTimer  *timer;//定时器
 
@@ -116,7 +116,7 @@
     }else {
         //没有的话就创建
         self.imageNumber++;
-        UIImageView * imageView = [[UIImageView alloc]initWithImage:[UIImage imageNamed:@"hb.png"]];
+        UIImageView * imageView = [[UIImageView alloc]initWithImage:[UIImage imageNamed:@"RedPaper.png"]];
         imageView.tag = self.imageNumber;
         [self animationWithImageView:imageView andSecond:second];
     }
@@ -126,8 +126,8 @@
 - (void)animationWithImageView:(UIImageView *)imageView andSecond:(double)second{
     [self.usedImageArray addObject:imageView];
     //NSLog(@"tag=%ld",imageView.tag);
-    int x = arc4random() % (int)([UIScreen mainScreen].bounds.size.width - 79);
-    imageView.frame = CGRectMake(x, -95, 79, 95);
+    int x = arc4random() % (int)([UIScreen mainScreen].bounds.size.width - 95);
+    imageView.frame = CGRectMake(x, -95, 95, 95);
     [self.view addSubview:imageView];
     
     //下落动画
@@ -136,22 +136,39 @@
     [UIView setAnimationDuration:second];
     [UIView setAnimationDelegate:self];
     imageView.frame = CGRectMake(imageView.frame.origin.x, KSCReenHeight, imageView.frame.size.width, imageView.frame.size.height);
+    [imageView setTransform:CGAffineTransformRotate(imageView.transform, M_PI * 0.3)];
+    
+    [UIView commitAnimations];
+    
+    [UIView beginAnimations:@"rotationAnimation" context:NULL];
+    [UIView setAnimationDuration:second / 10];
+    [UIView setAnimationCurve:UIViewAnimationCurveEaseInOut];
+    [UIView setAnimationRepeatCount:5];
+    [UIView setAnimationRepeatAutoreverses:YES];
+    CGAffineTransform tranform= CGAffineTransformMakeRotation(-M_PI * 0.2);
+    [imageView setTransform:CGAffineTransformRotate(tranform, M_PI * 0.2)];
+    [UIView setAnimationDelegate:self];
     [UIView commitAnimations];
 
+    
 }
 //动画停止
-- (void)animationDidStop:(NSString *)animationID finished:(NSNumber *)finished context:(void *)context
-{
-    UIImageView *imageView = (UIImageView *)[self.view viewWithTag:[animationID intValue]];
-    if ([self.imageArray containsObject:imageView]) {
-        return;
+- (void)animationDidStop:(NSString *)animationID finished:(NSNumber *)finished context:(void *)context{
+    
+    if (![animationID isEqualToString:@"rotationAnimation"]) {
+        UIImageView *imageView = (UIImageView *)[self.view viewWithTag:[animationID intValue]];
+        if ([self.imageArray containsObject:imageView]) {
+            return;
+        }
+        if (!imageView) {
+            return;
+        }
+        [imageView.layer removeAllAnimations];
+        [imageView removeFromSuperview];
+        [self.imageArray addObject:imageView];
+        [self.usedImageArray removeObject:imageView];
     }
-    if (!imageView) {
-        return;
-    }
-    [imageView removeFromSuperview];
-    [self.imageArray addObject:imageView];
-    [self.usedImageArray removeObject:imageView];
+    
 }
 
 //触摸view
@@ -177,9 +194,6 @@
             
             [self showAddCartAnmationSview:self.view imageView:imgView starPoin:imgView.center endPoint:CGPointMake(KSCReenWidth - 20 - 25, KSCReenHeight - 20 - 15) dismissTime:1.0];
             
-//            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-//
-//            });
             
             [imgView removeFromSuperview];
             [self.imageArray addObject:imgView];
@@ -189,7 +203,7 @@
     }
 }
 
-
+//点中后动画
 - (void)showAddCartAnmationSview:(UIView *)sview
                        imageView:(UIImageView *)imageView
                         starPoin:(CGPoint)startPoint
@@ -243,11 +257,7 @@
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(dismissTime * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         [layer removeFromSuperlayer];
         layer = nil;
-//        [imageView removeFromSuperview];
-//        [_imageArray addObject:imageView];
-//        [_usedImageArray removeObject:imageView];
     });
 }
-
 
 @end
