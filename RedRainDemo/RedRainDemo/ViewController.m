@@ -28,10 +28,13 @@
 @property (assign, nonatomic) double number;
 @property (assign, nonatomic) NSInteger imageNumber;
 @property (assign, nonatomic) NSInteger selectedNumber;//选中的红包
+@property (weak, nonatomic) IBOutlet UIButton *stop;
 
 
 @property (nonatomic,strong) NSMutableArray * imageArray;//未用的图层数组
 @property (nonatomic,strong) NSMutableArray * usedImageArray;//已经使用的图层数组
+
+@property (assign ,nonatomic) BOOL isStop;
 
 @end
 
@@ -47,7 +50,7 @@
     _imageArray = [NSMutableArray array];
     _usedImageArray = [NSMutableArray array];
 
-
+    [self.stop addTarget:self action:@selector(stopAnimation) forControlEvents:UIControlEventTouchUpInside];
     [self.startBtn addTarget:self action:@selector(start) forControlEvents:UIControlEventTouchUpInside];
 }
 
@@ -67,6 +70,7 @@
 #pragma mark - Private
 //开始红包雨
 - (void)start {
+    self.isStop = NO;
     self.imageNumber = 0;
     self.number = 0;
     self.selectedNumber = 0;
@@ -86,12 +90,32 @@
     double interval = self.second / self.num;
     self.timer=[NSTimer scheduledTimerWithTimeInterval:interval target:self selector:@selector(creatRedRain) userInfo:nil repeats:YES];
 }
+//结束
+- (void)stopAnimation {
+    self.isStop = YES;
+    [self.timer invalidate];
+    self.timer = nil;
+
+    self.selectedLabel.hidden = NO;
+    self.selectedLabel.text = [NSString stringWithFormat:@"点中%ld个",self.selectedNumber];
+
+    self.imageArray = nil;
+    self.usedImageArray = nil;
+    double interval = self.second / self.num;
+    double second = interval * self.screenNum;
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(second * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        self.startBtn.hidden = NO;
+    });
+
+}
+
+
 //创建红包
 - (void)creatRedRain {
     
     self.number++;//每创建一个红包增加一次,到固定次数后停止
     double interval = self.second / self.num;
-    double second = interval * self.screenNum;
+    double second = interval * self.screenNum * ((self.num * 2 - self.number) / self.num / 2);
     if (self.number > self.num) {
         [self.timer invalidate];
         self.timer = nil;
@@ -116,7 +140,7 @@
     }else {
         //没有的话就创建
         self.imageNumber++;
-        UIImageView * imageView = [[UIImageView alloc]initWithImage:[UIImage imageNamed:@"RedPaper.png"]];
+        UIImageView * imageView = [[UIImageView alloc]initWithImage:[UIImage imageNamed:@"redPaper.png"]];
         imageView.tag = self.imageNumber;
         [self animationWithImageView:imageView andSecond:second];
     }
@@ -126,8 +150,8 @@
 - (void)animationWithImageView:(UIImageView *)imageView andSecond:(double)second{
     [self.usedImageArray addObject:imageView];
     //NSLog(@"tag=%ld",imageView.tag);
-    int x = arc4random() % (int)([UIScreen mainScreen].bounds.size.width - 95);
-    imageView.frame = CGRectMake(x, -95, 95, 95);
+    int x = arc4random() % (int)([UIScreen mainScreen].bounds.size.width - 70);
+    imageView.frame = CGRectMake(x, -70, 70, 70);
     [self.view addSubview:imageView];
     
     //下落动画
@@ -141,9 +165,9 @@
     [UIView commitAnimations];
     
     [UIView beginAnimations:@"rotationAnimation" context:NULL];
-    [UIView setAnimationDuration:second / 10];
+    [UIView setAnimationDuration:second / 8];
     [UIView setAnimationCurve:UIViewAnimationCurveEaseInOut];
-    [UIView setAnimationRepeatCount:5];
+    [UIView setAnimationRepeatCount:4];
     [UIView setAnimationRepeatAutoreverses:YES];
     CGAffineTransform tranform= CGAffineTransformMakeRotation(-M_PI * 0.2);
     [imageView setTransform:CGAffineTransformRotate(tranform, M_PI * 0.2)];
@@ -165,14 +189,21 @@
         }
         [imageView.layer removeAllAnimations];
         [imageView removeFromSuperview];
-        [self.imageArray addObject:imageView];
-        [self.usedImageArray removeObject:imageView];
+        if (!self.isStop) {
+            [self.imageArray addObject:imageView];
+            [self.usedImageArray removeObject:imageView];
+        }
+
     }
     
 }
 
+
+
+
 //触摸view
 - (void)touchesBegan:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event {
+    [self.view endEditing:YES];
     NSLog(@"点了");
     UITouch *touch = touches.anyObject;
     CGPoint point = [touch locationInView:self.view];
