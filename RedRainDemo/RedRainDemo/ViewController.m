@@ -115,6 +115,7 @@
     
     self.number++;//每创建一个红包增加一次,到固定次数后停止
     double interval = self.second / self.num;
+    //下落时间逐渐变短,下降速度逐渐变快
     double second = interval * self.screenNum * ((self.num * 2 - self.number) / self.num / 2);
     if (self.number > self.num) {
         [self.timer invalidate];
